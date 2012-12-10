@@ -1,0 +1,25 @@
+This project is a FileSystem written in C/C++.
+
+06/28/2012:
+
+I am almost finished with "Phase 1" of the project, which consists of a single root directory and support for regular text files up to a certain size. As of last night I finished testing and realized that my current design doesn't allow for a persistent disc because of issues that I overlooked with writing objects to disc containing pointers to memory. Tonight I will be updating this to include serialization when writing to and reading from the disc. The plan is to finish this tonight and then start phase 2 tomorrow which includes support for larger files and multiple directories. Goal is to have a working project by Saturday 6/30/2012 EOD. At that point I will step away from this project for a while, though I am contemplating coming back to it and rewriting a lot of it to be even more object oriented in nature and include concepts such as advanced inheritance and polymorphism as practice.
+
+07/01/2012 01:26:44 PM 
+
+Still not completed with "Phase 1", updated code to include serialization algorithms for rootDir and freeblockqueue, though they still aren't working perfectly. Testing and bug fixes have taken longer than expected with this process. Currently errors upon disc mount when interacting with the "FileList". The freeBlockQueue also doesn't update permenantly after adding a new file to the directory, not sure why.
+
+Current plan is to go forward with the design/high level implementation of "Phase 2" to get more progress done as well as clear my mind on "Phase 1". Perhaps solutions to previous bugs will come during this process. Hoping to have one more push of changes tonight before going back to testing tomorrow.
+
+07/02/2012 08:49:12 PM 
+
+Finished "Phase 1", my initial plan was overstating the original requirements by having options to dismount and then remount the system during one run. Hardcoded the block name and size, added an option to reformat and got rid of create and mount. Now the file system is initialized already when the user is prompted.
+
+Moving on to "Phase 2", plan is to have a program that meets the requirements of this phase by 7/3 EOD at the latest. 
+
+During brainstorm for finishing "Phase 1", came up with an idea for possible future work on this project. Once disc added as its own class use DataBlock as the base class for all classes except disc. Each class has its own methods to save to and load from disc (serialize/deserialize). In these write all of the class member variables to a block of data (null filled if possible//further research) and then write to disc. Use the ofstream class for this and write binary data. Then when deserializing reverse can be done read from the block using ofstream. Should make the serialization and deserialization cleaner instead of writing whole objects as is to a block. Delete object after its written, and create a new one when reading.
+
+12/10/2012 12:13:57 AM 
+
+Almost done with "Phase 1" had to go back and change entire format to account for software and hardware representations of objects.
+Need to finish File Methods and test tomorrow. Then moving on to "Phase 2" by adding support for larger files and then multiple directories.
+
