@@ -49,7 +49,8 @@ class DataNode {
 		DataNode *pNext;
 		/*	Constructor	*/
 		DataNode (blockNum location) : dataLoc(location), pNext(NULL) 
-			{ }
+			{ for (int i = 0; i < sizeof(DataBlock); i++)
+				this->db.data[i] = 0;}
 		void Print();
 };
 	

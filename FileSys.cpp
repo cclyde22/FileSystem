@@ -38,6 +38,7 @@ void FileSys::CreateDisc () {
 			this->discID = mounted;
 			this->fbq.setDiscID(this->discID);
 			this->fbq.Init(this->FSHeader.totalBlocks);
+			bool FBQSaved = this->fbq.SaveFBQ();
 			this->root.setDiscID(this->discID);
 			cout << "Disc successfully created and ready for use.\n";
 		}
@@ -113,7 +114,7 @@ void FileSys::MountDisc () {
 				return;
 			}
 			else
-				cout << "Disc successfully reformatted and ready for use.\n";
+				cout << "Disc successfully mounted and ready for use with disc id = " << this->discID << "\n";
 		}
 	}
 	else
@@ -178,6 +179,7 @@ void FileSys::CreateFile () {
 		cout << "Error: A file with this name already exists\n";
 	else {
 		blockNum newFileHeaderLoc = this->fbq.GetFreeBlock();
+		cout << "Got free block for file header = " << newFileHeaderLoc << "\n";
 		File* newFile = new File (newFileHeaderLoc, this->discID);
 		newFile->SetName(newFileName);
 		string content;
@@ -185,7 +187,7 @@ void FileSys::CreateFile () {
 		cin >> content;
 		int i, j;
 		string contentArr[FILE_DB_ARR_SIZE];
-		for (i = 0, j = 0; i < content.length(), j < FILE_DB_ARR_SIZE; i+=sizeof(DataBlock), j++)
+		for (i = 0, j = 0; i < content.length() && j < FILE_DB_ARR_SIZE; i+=sizeof(DataBlock), j++)
 			contentArr[j] = content.substr(i, (i+511));
 		while (i % 512 != 0) {
 			//space fill
@@ -195,8 +197,8 @@ void FileSys::CreateFile () {
 		for (i = 0; i < j; i++) {
 			blockNum freeBlock = this->fbq.GetFreeBlock();
 			newFile->SetNextDataBlockNum(freeBlock);
-			newFile->WriteToCurrBlock(contentArr[i]);
 			newFile->LoadNextBlock();
+			newFile->WriteToCurrBlock(contentArr[i]);
 		}
 		newFile->Save();
 		bool FileAdded = this->root.AddFile(newFileName, newFileHeaderLoc);
@@ -239,7 +241,7 @@ void FileSys::UpdateFile () {
 		cin >> newContent;
 		int i, j;
 		string contentArr[FILE_DB_ARR_SIZE];
-		for (i = 0, j = 0; i < newContent.length(), j < FILE_DB_ARR_SIZE; i+=sizeof(DataBlock), j++)
+		for (i = 0, j = 0; i < newContent.length() && j < FILE_DB_ARR_SIZE; i+=sizeof(DataBlock), j++)
 			contentArr[j] = newContent.substr(i, (i+511));
 		while (i % 512 != 0) {
 			contentArr[j][i] = 0;

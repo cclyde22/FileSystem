@@ -45,7 +45,7 @@ void FreeBlockQueue::EmptyFBQ () {
 void FreeBlockQueue::Init (short int totalBlocks) {
 	int i, j;
 	this->EmptyFBQ();
-	for (i = 3, j = 0; i < totalBlocks, j < FBQ_HEADER_SIZE; i++, j++) {
+	for (i = 3, j = 0; i < totalBlocks && j < FBQ_HEADER_SIZE; i++, j++) {
 		this->FreeBlock(i);
 		this->fbqHeader.freeBlockLocs[j] = i;
 	}
@@ -98,6 +98,8 @@ void FreeBlockQueue::FreeBlock(blockNum blockToFree) {
 		bool saved = this->SaveFBQ();
 		if (saved == false)
 			cout << "Error saving FBQ to disc\n";
+		else
+			cout << "Successfully added block to free block queue\n";
 	}
 	else
 		cout << "Block number is already in free block queue\n";
@@ -108,7 +110,13 @@ void FreeBlockQueue::FreeBlock(blockNum blockToFree) {
 blockNum FreeBlockQueue::GetFreeBlock () {
 	if ( (this->isEmpty()) != true ) {
 		FBQNode* pTemp = this->pHead;
+		cout << "Declared pTemp\n";
+		if (this->pHead == NULL)
+			cout << "pHead is NULL\n";
+		else
+			cout << "pHead is not NULL\n";
 		blockNum freeBlock = this->pHead->freeBlockNumber;
+		cout << "Declared freeblock = " << freeBlock << "\n";
 		if (this->pHead->pNext == NULL)
 			this->pTail = NULL;
 		this->pHead = this->pHead->pNext;

@@ -31,11 +31,17 @@ File::File (blockNum headerLocation, int discIDNum) {
 	one block at a time to avoid messy pointer arithmetic	*/
 void File::SetNextDataBlockNum (blockNum newDBNum) {
 	DataNode* pNewNode = new DataNode (newDBNum);
-	if (this->pHead == NULL)
+	writeblock(this->discID, newDBNum, &(pNewNode->db));
+	if (this->pHead == NULL) {
 		this->pHead = pNewNode;
-	else
-		this->pHead->pNext = pNewNode;
-	this->pCurrBlock = this->pHead;
+		this->pCurrBlock = this->pHead;
+	}
+	else {
+		DataNode* pTemp = pHead;
+		while (pTemp->pNext != NULL)
+			pTemp = pTemp->pNext;
+		pTemp->pNext = pNewNode;
+	}
 	this->headerBlock.dataBlocks[this->headerBlock.blocksUsed] = newDBNum;
 	this->headerBlock.blocksUsed++;
 	writeblock(this->discID, this->headerLoc, &(this->headerBlock));
@@ -69,8 +75,10 @@ bool File::WriteToCurrBlock (string data) {
 
 /*	Load the next data block for the file into memory	*/
 bool File::LoadNextBlock () {
-	if (pCurrBlock->pNext != NULL)
-		pCurrBlock = pCurrBlock->pNext;
+	if (this->pCurrBlock->pNext != NULL) {
+		this->pCurrBlock = this->pCurrBlock->pNext;
+		readblock (this->discID, pCurrBlock->dataLoc, &(this->pCurrBlock->db));
+	}
 	else
 		cout << "Error loading next block, please assign new block number before loading next block\n";
 }
@@ -86,10 +94,9 @@ bool File::Save () {
 	writeblock (this->discID, this->headerLoc, &(this->headerBlock));
 }
 
+
 bool File::Load () {
 	readblock (this->discID, this->headerLoc, &(this->headerBlock));
-	for (int i = 0; i < this->headerBlock.blocksUsed; i++) {
-		DataNode* pCurr = new DataNode (this->headerBlock.dataBlocks[i]);
-		readblock (this->discID, pCurr->dataLoc, &(pCurr->db));
-	}
+	for (int i = 0; i < this->headerBlock.blocksUsed; i++)
+		this->SetNextDataBlockNum(this->headerBlock.dataBlocks[i]);
 }

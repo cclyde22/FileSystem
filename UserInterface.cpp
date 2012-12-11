@@ -3,7 +3,7 @@ using namespace std;
 
 short int UserInterface::GetChoice () {
 	short int currentChoice;
-	cout << "Please enter the number of the operation\nthat you would like to perform:\t"; 	 	
+	cout << "Please enter the number of the operation\nthat you would like to perform (0 to Display Menu):\t"; 	 	
 	cin >> currentChoice;
 	while (!cin && ((currentChoice > 9) || (currentChoice < 0)) ) {
 		cin.clear();
@@ -113,17 +113,17 @@ void UserInterface::run (FileSys *fs) {
 
 
 //testing size of structs to make sure that they will write correctly to disc
-
+/*
 void main () {
 	cout << "Size of File Header block is: " << sizeof(FileHeader) << " bytes\n";
 	cout << "Size of FBQ Header is: " << sizeof(FBQHeaderBlock) << " bytes\n";
 	cout << "Size of Root Header is: " << sizeof(RootHeaderBlock) << " bytes\n";
 	cout << "Size of FileSys Header block is: " << sizeof(SuperBlock) << " bytes\n";
 }
+*/
 
-/*
 void main () {
 	UserInterface UI;
 	FileSys *FileSystem = new FileSys();
 	UI.run(FileSystem);
-}*/
+}

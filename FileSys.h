@@ -24,8 +24,8 @@ class FileSys {
 		File* OpenFile (blockNum fileHeaderLoc);
 		void CloseFile (File* FileToClose);
 	public:
-		FileSys () {this->discID = 0;}
-		~FileSys () {this->discID = 0;}
+		FileSys () {this->discID = -1;}
+		~FileSys () {this->discID = -1;}
 		void SetDiscName (string newName);
 		int GetDiscID () const {return this->discID;}
 		void CreateDisc ();

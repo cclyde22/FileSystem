@@ -23,3 +23,7 @@ During brainstorm for finishing "Phase 1", came up with an idea for possible fut
 Almost done with "Phase 1" had to go back and change entire format to account for software and hardware representations of objects.
 Need to finish File Methods and test tomorrow. Then moving on to "Phase 2" by adding support for larger files and then multiple directories.
 
+12/11/2012 12:53:07 AM 
+
+Started testing "Phase 1", problem is currently in file methods comes up when trying to create file. Use gdb to debug issues tomorrow.
+
