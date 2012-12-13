@@ -99,7 +99,7 @@ void FileSys::MountDisc () {
 	if (mounted != -1) {
 		this->discID = mounted;
 		this->SetDiscName(discToMount);
-		GetSBInfo();
+		this->GetSBInfo();
 		this->fbq.setDiscID(this->discID);
 		bool FBQLoaded = this->fbq.LoadFBQ();
 		if (FBQLoaded == false) {
@@ -197,9 +197,11 @@ void FileSys::CreateFile () {
 		for (i = 0; i < j; i++) {
 			blockNum freeBlock = this->fbq.GetFreeBlock();
 			newFile->SetNextDataBlockNum(freeBlock);
-			newFile->LoadNextBlock();
 			newFile->WriteToCurrBlock(contentArr[i]);
+			newFile->SetNextDataBlockNum(freeBlock);
+			newFile->LoadNextBlock();
 		}
+		newFile->setSize(content.length());		
 		newFile->Save();
 		bool FileAdded = this->root.AddFile(newFileName, newFileHeaderLoc);
 		if (FileAdded == false)
@@ -255,6 +257,7 @@ void FileSys::UpdateFile () {
 			fileToUpdate->WriteToCurrBlock(contentArr[i]);
 			fileToUpdate->LoadNextBlock();
 		}
+		fileToUpdate->setSize(newContent.length());
 		fileToUpdate->Save();
 		bool FBQSaved = this->fbq.SaveFBQ();
 		if (FBQSaved == false)
@@ -283,11 +286,9 @@ void FileSys::DeleteFile () {
 		if (FileToDelete == NULL)
 			cout << "Error loading file into memory\n";
 		else {
-			DataNode* pCurrDB = FileToDelete->GetFirstDataNode();
-			while (pCurrDB != NULL) {
-				this->fbq.FreeBlock(pCurrDB->dataLoc);
-				pCurrDB = pCurrDB->pNext;
-			}
+			this->fbq.FreeBlock(FileToDelete->GetCurrBlockLoc());
+			while ( (FileToDelete->LoadNextBlock()) != false)
+				this->fbq.FreeBlock(FileToDelete->GetCurrBlockLoc());
 			this->fbq.FreeBlock(FileToDelete->GetHeaderLoc());
 			delete FileToDelete;
 			bool fileRemoved = this->root.RemoveFile(fileNameToDelete);

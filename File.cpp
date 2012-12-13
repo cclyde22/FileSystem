@@ -14,36 +14,21 @@ void DataNode::Print() {
 
 /*	Constructor - set pHead to null, call setHeaderLoc with headerLocation as the input	and setDiscID with discIDNum as the input	*/
 File::File (blockNum headerLocation, int discIDNum) {
-	this->pHead = NULL;
 	this->pCurrBlock = NULL;
 	this->setHeaderLoc(headerLocation);
 	this->setDiscID(discIDNum);
-	this->headerBlock.size = 0;
-	this->headerBlock.blocksUsed = 0;
-	for (int i = 0; i < FILE_DB_ARR_SIZE; i++)
-		this->headerBlock.dataBlocks[i] = 0;
-	if ((this->Save() == false))
-		cout << "Error saving file to disc\n";
 }
 
 /*	Set the block number for the next data block in the file.
 	Used to extend a file, allows FileSys methods to pass free blocks to the file
 	one block at a time to avoid messy pointer arithmetic	*/
 void File::SetNextDataBlockNum (blockNum newDBNum) {
-	DataNode* pNewNode = new DataNode (newDBNum);
-	writeblock(this->discID, newDBNum, &(pNewNode->db));
-	if (this->pHead == NULL) {
-		this->pHead = pNewNode;
-		this->pCurrBlock = this->pHead;
+	if (this->pCurrBlock == NULL) {
+		DataNode* pTemp = new DataNode (newDBNum);
+		this->pCurrBlock = pTemp;
 	}
-	else {
-		DataNode* pTemp = pHead;
-		while (pTemp->pNext != NULL)
-			pTemp = pTemp->pNext;
-		pTemp->pNext = pNewNode;
-	}
-	this->headerBlock.dataBlocks[this->headerBlock.blocksUsed] = newDBNum;
-	this->headerBlock.blocksUsed++;
+	this->headerBlock.dataBlocks[this->blocksInFile] = newDBNum;
+	this->blocksInFile++;
 	writeblock(this->discID, this->headerLoc, &(this->headerBlock));
 }
 
@@ -54,49 +39,90 @@ void File::SetName(string newName)
 		newName = newName.substr(0,31);
 	strcpy(this->headerBlock.name, newName.c_str());}
 	
-/*	Iterate through data block list printing the contents of each data block in turn	*/
-void File::Print () const {
-	DataNode* pCurr = this->pHead;
-	while (pCurr != NULL) {
-		pCurr->Print();
-		pCurr = pCurr->pNext;
-	}
-}
 
-/*	Write the input string to the current data block in memory.
+/*	Write the input Data Block to the current data block in memory.
 	Calling function handles error handling (Truncating string to 512 bytes).	*/
 bool File::WriteToCurrBlock (string data) {
 	for (int i = 0; i < sizeof(DataBlock); i++)
 		this->pCurrBlock->db.data[i] = data[i];
 	writeblock (this->discID, this->pCurrBlock->dataLoc, &(this->pCurrBlock->db));
-	this->headerBlock.size = this->headerBlock.size += sizeof(DataBlock);
-	writeblock (this->discID, this->headerLoc, &(this->headerBlock));
 }
 
 /*	Load the next data block for the file into memory	*/
 bool File::LoadNextBlock () {
-	if (this->pCurrBlock->pNext != NULL) {
-		this->pCurrBlock = this->pCurrBlock->pNext;
-		readblock (this->discID, pCurrBlock->dataLoc, &(this->pCurrBlock->db));
+	if ( (writeblock(this->discID, this->pCurrBlock->dataLoc, &(this->pCurrBlock->db))) == 0) {
+		cout << "Error saving current block, next block not loaded\n";
+		return false;
 	}
-	else
+	if (this->headerBlock.dataBlocks[++currBlockPos] != 0) {
+		if ( (readblock (this->discID, this->headerBlock.dataBlocks[currBlockPos], &(this->pCurrBlock->db)) ) == 0) {
+			cout << "Error loading next block into memory\n";
+			return false;
+		}
+		this->pCurrBlock->dataLoc = this->headerBlock.dataBlocks[currBlockPos];
+	}
+	else {
 		cout << "Error loading next block, please assign new block number before loading next block\n";
-}
-
-/*	Iterate through data block list saving each to disc in turn.
-	Add each block number to FileHeader data block list and save FileHeader to disc	*/
-bool File::Save () {
-	DataNode* pCurr = this->pHead;
-	while (pCurr != NULL) {
-		writeblock (this->discID, pCurr->dataLoc, &(pCurr->db));
-		pCurr = pCurr->pNext;
+		return false;
 	}
-	writeblock (this->discID, this->headerLoc, &(this->headerBlock));
 }
 
+bool File::LoadFirstBlock () {
+	if (this->pCurrBlock != NULL) {
+		if ( (writeblock(this->discID, this->pCurrBlock->dataLoc, &(this->pCurrBlock->db))) == 0) {
+			cout << "Error saving current block, first block not loaded\n";
+			return false;
+		}	
+	}
+	else {
+		DataNode* pTemp = new DataNode (0);
+		this->pCurrBlock = pTemp;
+	}
+	if (this->headerBlock.dataBlocks[0] != 0) {
+		if ( (readblock (this->discID, this->headerBlock.dataBlocks[0], &(this->pCurrBlock->db)) ) == 0) {
+			cout << "Error loading first block into memory\n";
+			return false;
+		}
+		this->pCurrBlock->dataLoc = this->headerBlock.dataBlocks[0];
+	}
+	else {
+		cout << "Error loading first block, please assign new block number before loading\n";
+		return false;
+	}
+}
+
+/*	*/
+bool File::Save () {
+	cout << "File saving to disc at location " << this->headerLoc << "datablocks saved shown below\n";
+	for (int i = 0; i < FILE_DB_ARR_SIZE; i++)
+		cout << this->headerBlock.dataBlocks[i];
+	cout <<"\n";
+	if ( (writeblock (this->discID, this->headerLoc, &(this->headerBlock))) == 0)
+		return false;
+	else
+		return true;
+}
 
 bool File::Load () {
-	readblock (this->discID, this->headerLoc, &(this->headerBlock));
-	for (int i = 0; i < this->headerBlock.blocksUsed; i++)
-		this->SetNextDataBlockNum(this->headerBlock.dataBlocks[i]);
+	cout << "Loading file from disc at location " << this->headerLoc << "datablocks loaded shown below\n";
+	if ( (readblock (this->discID, this->headerLoc, &(this->headerBlock))) == 0)
+		return false;
+	else {
+		for (int i = 0; i < FILE_DB_ARR_SIZE; i++)
+			cout << this->headerBlock.dataBlocks[i];
+		cout <<"\n";
+		if ( (this->LoadFirstBlock()) == false)
+			return false;
+		else
+			return true;
+	}
+}
+
+void File::Print() {
+	cout << "In PrintFile\n";
+	if ( (this->LoadFirstBlock()) == false)
+		return;
+	(this->pCurrBlock)->Print();
+	while ( (this->LoadNextBlock()) != false )
+		(this->pCurrBlock)->Print();
 }

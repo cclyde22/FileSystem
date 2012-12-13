@@ -3,7 +3,7 @@ using namespace std;
 
 short int UserInterface::GetChoice () {
 	short int currentChoice;
-	cout << "Please enter the number of the operation\nthat you would like to perform (0 to Display Menu):\t"; 	 	
+	cout << "Please enter the number of the operation\nthat you would like to perform (0 to Display Menu): "; 	 	
 	cin >> currentChoice;
 	while (!cin && ((currentChoice > 9) || (currentChoice < 0)) ) {
 		cin.clear();

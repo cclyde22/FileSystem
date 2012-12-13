@@ -5,7 +5,7 @@ using namespace std;
 /*	The print method for an individual file, used in the list root method
 	to print each node of the linked list individually	*/
 void FileNode::Print() {
-	cout << this->fileName << "/n";
+	cout << this->fileName << "\n";
 }
 
 /* RootDir Constructor	*/
@@ -21,7 +21,7 @@ RootDir::RootDir () {
 	also add new file block number to hardware version of the root directory
 	return false on error	*/
 bool RootDir::AddFile (string name, blockNum location) {
-	if (FindFile(name) != -1) {
+	if (FindFile(name) == -1) {
 		FileNode* pNewFile = new FileNode (name, location);
 		pNewFile->pNext = pHead;
 		this->pHead = pNewFile;

@@ -27,3 +27,7 @@ Need to finish File Methods and test tomorrow. Then moving on to "Phase 2" by ad
 
 Started testing "Phase 1", problem is currently in file methods comes up when trying to create file. Use gdb to debug issues tomorrow.
 
+12/12/2012 11:18:39 PM 
+
+Still testing Phase 1, current errors in saving fbq and getting free blocks inside create file. 
+

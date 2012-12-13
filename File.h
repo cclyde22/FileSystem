@@ -20,7 +20,7 @@ const blockNum SB_ADDRESS = 0;		//block number for persistant SuperBlock
 const blockNum FBQ_ADDRESS = 1; 	//block number of persistant FBQ
 const blockNum ROOT_ADDRESS = 2; 	//block number of persistant rootDir
 
-const int FILE_DB_ARR_SIZE = 118;
+const int FILE_DB_ARR_SIZE = 119;
 
 /*	Hardware structures	*/
 
@@ -33,11 +33,8 @@ struct LocationBlock
 
 struct FileHeader {
 	char name[32];
-	/* Size in bytes */
 	int size;
-	int blocksUsed; //aka block count (helps manage the dataBlock array)
-	/*	Array of locations of blocks for data (-1 filled) */
-	blockNum dataBlocks[118];
+	blockNum dataBlocks[119];
 };
 
 /*	Software Objects (for when file is in memory)	*/
@@ -46,11 +43,10 @@ class DataNode {
 	public:
 		DataBlock db;
 		blockNum dataLoc;
-		DataNode *pNext;
 		/*	Constructor	*/
-		DataNode (blockNum location) : dataLoc(location), pNext(NULL) 
+		DataNode (blockNum location) : dataLoc(location) 
 			{ for (int i = 0; i < sizeof(DataBlock); i++)
-				this->db.data[i] = 0;}
+				this->db.data[i] = ' ';}
 		void Print();
 };
 	
@@ -58,25 +54,27 @@ class DataNode {
 class File {
 private:
 	int discID;
+	int blocksInFile;
+	int currBlockPos;
 	blockNum headerLoc;
 	FileHeader headerBlock;
 	DataNode* pCurrBlock;
-	DataNode* pHead;
 public:
 	File (blockNum headerLocation, int discIDNum);
 	~File () {}
-	string GetName() const {return this->headerBlock.name;}
-	/*	Used to delete the file, calling function iterates through list deleting each in turn	*/
-	DataNode* GetFirstDataNode () const {return this->pHead;}	
+	string GetName() const {return this->headerBlock.name;}	
 	void setDiscID (int idNum) {this->discID = idNum;}
 	void setHeaderLoc (blockNum location) {this->headerLoc = location;}
+	void setSize (int newSize) {this->headerBlock.size = newSize;}
 	blockNum GetHeaderLoc () {return this->headerLoc;}
-	int GetBlocksUsed () {return this->headerBlock.blocksUsed;}	
+	blockNum GetCurrBlockLoc () {return this->pCurrBlock->dataLoc;}
+	int GetBlocksUsed () {return this->blocksInFile;}
 	void SetNextDataBlockNum (blockNum newDBNum);
 	void SetName (string newName);
-	void Print () const;	
+	void Print();
 	bool WriteToCurrBlock (string data);
 	bool LoadNextBlock ();
+	bool LoadFirstBlock ();
 	bool Save ();
 	bool Load ();
 };
