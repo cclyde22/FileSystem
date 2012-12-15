@@ -50,53 +50,37 @@ bool File::WriteToCurrBlock (string data) {
 
 /*	Load the next data block for the file into memory	*/
 bool File::LoadNextBlock () {
-	if ( (writeblock(this->discID, this->pCurrBlock->dataLoc, &(this->pCurrBlock->db))) == 0) {
-		cout << "Error saving current block, next block not loaded\n";
+	if ( (writeblock(this->discID, this->pCurrBlock->dataLoc, &(this->pCurrBlock->db))) == 0)
 		return false;
-	}
 	if (this->headerBlock.dataBlocks[++currBlockPos] != 0) {
-		if ( (readblock (this->discID, this->headerBlock.dataBlocks[currBlockPos], &(this->pCurrBlock->db)) ) == 0) {
-			cout << "Error loading next block into memory\n";
+		if ( (readblock (this->discID, this->headerBlock.dataBlocks[currBlockPos], &(this->pCurrBlock->db)) ) == 0)
 			return false;
-		}
 		this->pCurrBlock->dataLoc = this->headerBlock.dataBlocks[currBlockPos];
 	}
-	else {
-		cout << "Error loading next block, please assign new block number before loading next block\n";
+	else 
 		return false;
-	}
 }
 
 bool File::LoadFirstBlock () {
 	if (this->pCurrBlock != NULL) {
-		if ( (writeblock(this->discID, this->pCurrBlock->dataLoc, &(this->pCurrBlock->db))) == 0) {
-			cout << "Error saving current block, first block not loaded\n";
+		if ( (writeblock(this->discID, this->pCurrBlock->dataLoc, &(this->pCurrBlock->db))) == 0)
 			return false;
-		}	
 	}
 	else {
 		DataNode* pTemp = new DataNode (0);
 		this->pCurrBlock = pTemp;
 	}
 	if (this->headerBlock.dataBlocks[0] != 0) {
-		if ( (readblock (this->discID, this->headerBlock.dataBlocks[0], &(this->pCurrBlock->db)) ) == 0) {
-			cout << "Error loading first block into memory\n";
+		if ( (readblock (this->discID, this->headerBlock.dataBlocks[0], &(this->pCurrBlock->db)) ) == 0)
 			return false;
-		}
 		this->pCurrBlock->dataLoc = this->headerBlock.dataBlocks[0];
 	}
-	else {
-		cout << "Error loading first block, please assign new block number before loading\n";
+	else
 		return false;
-	}
 }
 
 /*	*/
 bool File::Save () {
-	cout << "File saving to disc at location " << this->headerLoc << "datablocks saved shown below\n";
-	for (int i = 0; i < FILE_DB_ARR_SIZE; i++)
-		cout << this->headerBlock.dataBlocks[i];
-	cout <<"\n";
 	if ( (writeblock (this->discID, this->headerLoc, &(this->headerBlock))) == 0)
 		return false;
 	else
@@ -104,24 +88,13 @@ bool File::Save () {
 }
 
 bool File::Load () {
-	cout << "Loading file from disc at location " << this->headerLoc << "datablocks loaded shown below\n";
 	if ( (readblock (this->discID, this->headerLoc, &(this->headerBlock))) == 0)
 		return false;
-	else {
-		for (int i = 0; i < FILE_DB_ARR_SIZE; i++)
-			cout << this->headerBlock.dataBlocks[i];
-		cout <<"\n";
-		if ( (this->LoadFirstBlock()) == false)
-			return false;
-		else
-			return true;
-	}
+	else
+		return true;
 }
 
 void File::Print() {
-	cout << "In PrintFile\n";
-	if ( (this->LoadFirstBlock()) == false)
-		return;
 	(this->pCurrBlock)->Print();
 	while ( (this->LoadNextBlock()) != false )
 		(this->pCurrBlock)->Print();

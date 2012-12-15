@@ -62,7 +62,8 @@ private:
 public:
 	File (blockNum headerLocation, int discIDNum);
 	~File () {}
-	string GetName() const {return this->headerBlock.name;}	
+	string GetName() const {return this->headerBlock.name;}
+	int GetSize () const {return this->headerBlock.size;}
 	void setDiscID (int idNum) {this->discID = idNum;}
 	void setHeaderLoc (blockNum location) {this->headerLoc = location;}
 	void setSize (int newSize) {this->headerBlock.size = newSize;}

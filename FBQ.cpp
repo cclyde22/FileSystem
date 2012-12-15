@@ -99,8 +99,10 @@ void FreeBlockQueue::FreeBlock(blockNum blockToFree) {
 		if (saved == false)
 			cout << "Error saving FBQ to disc\n";
 	}
-	else
-		cout << "Block number is already in free block queue\n";
+	else {
+		if (blockToFree != 0)
+			cout << "Block number is already in free block queue\n";
+	}
 } 
 
 /*	Get a free block for use from the queue,

@@ -114,11 +114,11 @@ void FileSys::MountDisc () {
 				return;
 			}
 			else
-				cout << "Disc successfully mounted and ready for use with disc id = " << this->discID << "\n";
+				cout << "Disc successfully mounted and ready for use\n";
 		}
 	}
 	else
-		cout << "Something went wrong, disc not mounted for use after reformat\n";
+		cout << "Disc with the name " << discToMount << " not found\n";
 	
 }
 
@@ -130,8 +130,12 @@ File* FileSys::OpenFile (blockNum fileHeaderLoc) {
 		cout << "Error loading file data from disc\n";
 		return NULL;
 	}
-	else
-		return openedFile;
+	else {
+		if ( (openedFile->LoadFirstBlock()) == false)
+			return NULL;
+		else
+			return openedFile;
+	}
 }
 
 /*	Save the file header, data blocks to disc.
@@ -185,25 +189,31 @@ void FileSys::CreateFile () {
 		string content;
 		cout << "Enter the initial contents for the new file\n";
 		cin >> content;
+
 		int i, j;
 		string contentArr[FILE_DB_ARR_SIZE];
 		for (i = 0, j = 0; i < content.length() && j < FILE_DB_ARR_SIZE; i+=sizeof(DataBlock), j++)
 			contentArr[j] = content.substr(i, (i+511));
+		j--;
 		while (i % 512 != 0) {
 			//space fill
 			contentArr[j][i] = ' ';
 			i++;
 		}
-		for (i = 0; i < j; i++) {
-			blockNum freeBlock = this->fbq.GetFreeBlock();
-			newFile->SetNextDataBlockNum(freeBlock);
+		if (content.length() > 0)
+			newFile->SetNextDataBlockNum( this->fbq.GetFreeBlock() ); //sets data block location for first data block.
+		for (i = 0; i <= j; i++) {
+			cout << i << "," << j << "\n";
 			newFile->WriteToCurrBlock(contentArr[i]);
-			newFile->SetNextDataBlockNum(freeBlock);
-			newFile->LoadNextBlock();
+			if (i != j) {
+				newFile->SetNextDataBlockNum( this->fbq.GetFreeBlock() );
+				newFile->LoadNextBlock();
+			}
+			cout << i << "," <<j <<"\n";
 		}
 		newFile->setSize(content.length());		
 		newFile->Save();
-		bool FileAdded = this->root.AddFile(newFileName, newFileHeaderLoc);
+		bool FileAdded = this->root.AddFile(newFileName, newFile->GetSize(), newFileHeaderLoc);
 		if (FileAdded == false)
 			cout << "Error adding file to root directory\n";
 		else {
@@ -232,12 +242,18 @@ void FileSys::UpdateFile () {
 	cout << "Enter the name of the file that you would like to update\n";
 	cin >> fileNameToUpdate;
 	blockNum FileExists = this->root.FindFile(fileNameToUpdate);
+	cout << "File block number is: " << FileExists << "\n";
 	if (FileExists == -1)
 		cout << "Error: A file with this name does not exists\n";
 	else {
-		File* fileToUpdate = this->OpenFile(FileExists);
+		File* OpenedFile = this->OpenFile(FileExists);
+		if (OpenedFile == NULL) {
+			cout << "Error: File not opened correctly\n";
+			return;
+		}
 		cout << "The current contents of " << fileNameToUpdate << " are: \n";
-		fileToUpdate->Print();
+		OpenedFile->Print();
+		this->root.RemoveFile(fileNameToUpdate);
 		string newContent;
 		cout << "\nEnter the new content for this file\n";
 		cin >> newContent;
@@ -250,15 +266,18 @@ void FileSys::UpdateFile () {
 			i++;
 		}
 		for (i = 0; i < j; i++) {
-			if (i > fileToUpdate->GetBlocksUsed()) {
+			if (i > OpenedFile->GetBlocksUsed()) {
 				blockNum freeBlock = this->fbq.GetFreeBlock();
-				fileToUpdate->SetNextDataBlockNum(freeBlock);
+				OpenedFile->SetNextDataBlockNum(freeBlock);
 			}
-			fileToUpdate->WriteToCurrBlock(contentArr[i]);
-			fileToUpdate->LoadNextBlock();
+			OpenedFile->WriteToCurrBlock(contentArr[i]);
+			OpenedFile->LoadNextBlock();
 		}
-		fileToUpdate->setSize(newContent.length());
-		fileToUpdate->Save();
+		OpenedFile->setSize(newContent.length());
+		OpenedFile->Save();
+		bool FileAdded = this->root.AddFile(fileNameToUpdate, OpenedFile->GetSize(), OpenedFile->GetHeaderLoc());
+		if (FileAdded == false)
+			cout << "Error adding file to root directory\n";
 		bool FBQSaved = this->fbq.SaveFBQ();
 		if (FBQSaved == false)
 			cout << "Error saving fbq to disc\n";
