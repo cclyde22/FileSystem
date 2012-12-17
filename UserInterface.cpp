@@ -3,9 +3,11 @@ using namespace std;
 
 short int UserInterface::GetChoice () {
 	short int currentChoice;
-	cout << "Please enter the number of the operation\nthat you would like to perform (0 to Display Menu): "; 	 	
+	cout << "Please enter the number corresponding to your desired operation (0 to Display Menu): ";
+	cin.clear();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	cin >> currentChoice;
-	while (!cin && ((currentChoice > 9) || (currentChoice < 0)) ) {
+	while (!cin || ((currentChoice > 9) || (currentChoice < 0)) ) {
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		cout << "Invalid input. Try again: ";

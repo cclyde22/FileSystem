@@ -5,7 +5,7 @@ using namespace std;
 /*	The print method for an individual file, used in the list root method
 	to print each node of the linked list individually	*/
 void FileNode::Print() {
-	cout << this->fileName << " size: " << this->fileSize << "location: " << this->fileLoc << "\n";
+	cout << "Name: " << this->fileName << "\tSize: " << this->fileSize << "\tLocation: " << this->fileLoc << "\n";
 }
 
 /* RootDir Constructor	*/
@@ -105,8 +105,10 @@ bool RootDir::SaveRoot () {
 bool RootDir::LoadRoot () {
 	int success = readblock(this->discID, ROOT_ADDRESS, &(this->rootHeader));
 	if (success) {
-		for (int i = 0; i < ROOT_HEADER_SIZE; i++)
-			this->AddFile(this->rootHeader.fileBlockLocs[i]);
+		for (int i = 0; i < ROOT_HEADER_SIZE; i++) {
+			if (this->rootHeader.fileBlockLocs[i] > 2)
+				this->AddFile(this->rootHeader.fileBlockLocs[i]);
+		}
 		bool saved = this->SaveRoot();
 		if (saved == false)
 			cout << "Error saving FBQ to disc\n";
@@ -116,7 +118,7 @@ bool RootDir::LoadRoot () {
 	printing the information from each node until the end of the list	*/
 void RootDir::Print() const {
 	cout << "Root Directory contains " << this->count << " entries\n";
-	cout << "------------------------------------------------------\n";
+	cout << "----------------------------------------\n";
 	FileNode* pCurr = this->pHead;
 	while (pCurr != NULL) {
 		pCurr->Print();

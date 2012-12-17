@@ -100,7 +100,7 @@ void FreeBlockQueue::FreeBlock(blockNum blockToFree) {
 			cout << "Error saving FBQ to disc\n";
 	}
 	else {
-		if (blockToFree != 0)
+		if (blockToFree > 3)
 			cout << "Block number is already in free block queue\n";
 	}
 } 

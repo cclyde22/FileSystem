@@ -166,6 +166,7 @@ void FileSys::PrintFile () {
 		else {
 			OpenedFile->Print();
 			this->CloseFile(OpenedFile);
+			cout <<"\n";
 		} 
 	}
 	else
@@ -183,13 +184,13 @@ void FileSys::CreateFile () {
 		cout << "Error: A file with this name already exists\n";
 	else {
 		blockNum newFileHeaderLoc = this->fbq.GetFreeBlock();
-		cout << "Got free block for file header = " << newFileHeaderLoc << "\n";
 		File* newFile = new File (newFileHeaderLoc, this->discID);
 		newFile->SetName(newFileName);
 		string content;
 		cout << "Enter the initial contents for the new file\n";
-		cin >> content;
-
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		getline(cin, content);
 		int i, j;
 		string contentArr[FILE_DB_ARR_SIZE];
 		for (i = 0, j = 0; i < content.length() && j < FILE_DB_ARR_SIZE; i+=sizeof(DataBlock), j++)
@@ -203,13 +204,11 @@ void FileSys::CreateFile () {
 		if (content.length() > 0)
 			newFile->SetNextDataBlockNum( this->fbq.GetFreeBlock() ); //sets data block location for first data block.
 		for (i = 0; i <= j; i++) {
-			cout << i << "," << j << "\n";
 			newFile->WriteToCurrBlock(contentArr[i]);
 			if (i != j) {
 				newFile->SetNextDataBlockNum( this->fbq.GetFreeBlock() );
 				newFile->LoadNextBlock();
 			}
-			cout << i << "," <<j <<"\n";
 		}
 		newFile->setSize(content.length());		
 		newFile->Save();
@@ -256,7 +255,9 @@ void FileSys::UpdateFile () {
 		this->root.RemoveFile(fileNameToUpdate);
 		string newContent;
 		cout << "\nEnter the new content for this file\n";
-		cin >> newContent;
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		getline(cin, newContent);
 		int i, j;
 		string contentArr[FILE_DB_ARR_SIZE];
 		for (i = 0, j = 0; i < newContent.length() && j < FILE_DB_ARR_SIZE; i+=sizeof(DataBlock), j++)

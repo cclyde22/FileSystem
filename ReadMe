@@ -31,3 +31,9 @@ Started testing "Phase 1", problem is currently in file methods comes up when tr
 
 Still testing Phase 1, current errors in saving fbq and getting free blocks inside create file. 
 
+12/16/2012 06:53:36 PM 
+
+Finished testing for phase 1. Everything is working correctly. 
+
+Next step is planning for phase 2 and implementation of phase 2. Phase 2 needs to work for large files and multiple directories. Account for large files (as well as larger fbq and root) with addition of variable "levels" to the header. This makes the addition of block numbers dynamic. Design algorithm for adding block numbers to be based on this variable. To account for multiple directories make new class Dir. Brainstorm methods needed, and changes needed to "root" methods because of this.  
+
